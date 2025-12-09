@@ -1,4 +1,3 @@
-
 import os
 import traceback
 import streamlit as st
@@ -17,6 +16,7 @@ load_dotenv()
 
 # تحديد المسار المطلق لقاعدة بيانات FAISS
 # os.path.dirname(file) يعطي المسار المطلق للمجلد الذي يحتوي على هذا الملف (app.py)
+# 🌟 تم تصحيح الخطأ هنا باستخدام file 🌟
 DB_FAISS_PATH = os.path.join(os.path.dirname(file), "vectorstore", "db_faiss")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 HF_TOKEN = os.getenv("HF_TOKEN")
@@ -74,7 +74,7 @@ def get_vectorstore():
         task="feature-extraction",
         huggingfacehub_api_token=HF_TOKEN,
     )
-    # استخدام المسار المطلق المعدل
+    # استخدام المسار المطلق المصحح
     db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
     return db
 
@@ -111,8 +111,7 @@ def main():
     if user_prompt:
         st.chat_message("user").markdown(user_prompt)
         st.session_state.messages.append({"role": "user", "content": user_prompt})
-
-# الرد على التحيات بشكل مناسب
+        
         if "صباح الخير" in user_prompt:
             greeting_reply = "صباح النور! كيف يمكنني مساعدتك اليوم؟"
         elif "مساء الخير" in user_prompt:
