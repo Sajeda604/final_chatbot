@@ -176,5 +176,6 @@ def main():
                 st.error(f"حدث خطأ داخلي: {repr(e)}")
                 st.code(traceback.format_exc())
 
-if name == "main":
+if __name__ == "__main__":
     main()
+
