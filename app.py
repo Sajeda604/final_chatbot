@@ -11,7 +11,8 @@ from langchain.prompts import PromptTemplate
 
 # تحميل متغيرات البيئة
 load_dotenv()
-BASE_DIR = os.path.dirname(os.path.abspath(file))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 DB_FAISS_PATH = os.path.join(BASE_DIR, "vectorstore", "db_faiss")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 HF_TOKEN = os.getenv("HF_TOKEN")
