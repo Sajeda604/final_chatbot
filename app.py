@@ -9,17 +9,43 @@ from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.prompts import PromptTemplate
 
-# -------------------------
-# 1. إعداد المتغيرات والمسار المطلق
-# -------------------------
+# تحميل متغيرات البيئة
 load_dotenv()
-
-# تحديد المسار المطلق لقاعدة بيانات FAISS
-# os.path.dirname(file) يعطي المسار المطلق للمجلد الذي يحتوي على هذا الملف (app.py)
-# 🌟 تم تصحيح الخطأ هنا باستخدام file 🌟
-DB_FAISS_PATH = os.path.join(os.path.dirname(file), "vectorstore", "db_faiss")
+BASE_DIR = os.path.dirname(os.path.abspath(file))
+DB_FAISS_PATH = os.path.join(BASE_DIR, "vectorstore", "db_faiss")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 HF_TOKEN = os.getenv("HF_TOKEN")
+# تعديل RTL للغة العربية
+st.markdown(
+    """
+    <style>
+    html, body, .main {
+        direction: rtl;
+        text-align: right;
+    }
+    .st-chat-message > div {
+        direction: rtl;
+        text-align: right;
+    }
+    .stTextInput>div>input {
+        direction: rtl;
+        text-align: right;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# تحميل قاعدة FAISS
+@st.cache_resource
+def get_vectorstore():
+    embeddings = HuggingFaceEndpointEmbeddings(
+        model="sentence-transformers/all-MiniLM-L6-v2",
+        task="feature-extraction",
+        huggingfacehub_api_token=HF_TOKEN,
+    )
+    db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
+    return db
 
 # قائمة التحيات
 GREETINGS = ["مرحبا", "أهلاً", "أهلا", "هاي", "السلام عليكم"]
@@ -62,25 +88,6 @@ retrieval_prompt = PromptTemplate(
 إجابة (مع اقتراح سؤال متابعة في النهاية):
 """
 )
-
-# -------------------------
-# 2. تحميل قاعدة FAISS
-# -------------------------
-
-@st.cache_resource
-def get_vectorstore():
-    embeddings = HuggingFaceEndpointEmbeddings(
-        model="sentence-transformers/all-MiniLM-L6-v2",
-        task="feature-extraction",
-        huggingfacehub_api_token=HF_TOKEN,
-    )
-    # استخدام المسار المطلق المصحح
-    db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
-    return db
-
-# -------------------------
-# 3. دالة Streamlit الرئيسية
-# -------------------------
 
 def main():
     st.title("🤖 مساعد المكتب البرمجي الذكي")
@@ -126,9 +133,7 @@ def main():
             st.session_state.messages.append({"role": "assistant", "content": greeting_reply})
         else:
             try:
-                # استدعاء قاعدة البيانات
-                db = get_vectorstore() 
-                
+                db = get_vectorstore()
                 llm = ChatGroq(
                     model="llama-3.1-8b-instant",
                     temperature=0.0,
@@ -169,31 +174,6 @@ def main():
             except Exception as e:
                 st.error(f"حدث خطأ داخلي: {repr(e)}")
                 st.code(traceback.format_exc())
-
-# -------------------------
-# 4. إعدادات RTL
-# -------------------------
-# تعديل RTL للغة العربية
-st.markdown(
-    """
-    <style>
-    html, body, .main {
-        direction: rtl;
-        text-align: right;
-    }
-    .st-chat-message > div {
-        direction: rtl;
-        text-align: right;
-    }
-    .stTextInput>div>input {
-        direction: rtl;
-        text-align: right;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
 
 if name == "main":
     main()

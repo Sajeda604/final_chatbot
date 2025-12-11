@@ -1,3 +1,4 @@
+
 import os
 from dotenv import load_dotenv
 from langchain_huggingface import HuggingFaceEndpointEmbeddings
@@ -11,7 +12,8 @@ load_dotenv()
 
 HF_TOKEN = os.getenv("HF_TOKEN")
 
-DB_FAISS_PATH = "vectorstore/db_faiss"
+BASE_DIR = os.path.dirname(os.path.abspath(file))
+DB_FAISS_PATH = os.path.join(BASE_DIR, "vectorstore", "db_faiss")
 
 # تحميل قاعدة البيانات
 embedding = HuggingFaceEndpointEmbeddings(
@@ -47,3 +49,5 @@ print(response["answer"])
 print("\n📚 المستندات المصدرية:")
 for doc in response["context"]:
     print(f"- {doc.metadata} -> {doc.page_content[:200]}...")
+
+
